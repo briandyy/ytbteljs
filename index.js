@@ -1,6 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const ytdl = require('ytdl-core');
-const TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
+const TOKEN = '6853749239:AAFiIhMKvfiatNjkq8_Q_pf9ZPFDIwa8CHE';
 
 // Initialize bot with polling
 const bot = new TelegramBot(TOKEN, { polling: true });
