@@ -1,31 +1,34 @@
 const TelegramBot = require('node-telegram-bot-api');
 const ytdl = require('ytdl-core');
+const fs = require('fs');
 const TOKEN = '6853749239:AAFiIhMKvfiatNjkq8_Q_pf9ZPFDIwa8CHE';
 
-// Initialize bot with polling
+// Initialize the bot
 const bot = new TelegramBot(TOKEN, { polling: true });
 
-bot.on('message', async (msg) => {
+// Listen for any kind of message
+bot.on('message', (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text;
 
   // Check if the message is a YouTube URL
   if (text.includes('youtube.com') || text.includes('youtu.be')) {
-    try {
-      // Send a message to the user that the download is starting
-      await bot.sendMessage(chatId, 'Downloading your video...');
+    const videoUrl = text;
+    const videoId = ytdl.getURLVideoID(videoUrl);
+    const videoPath = `./${videoId}.mp4`;
 
-      // Extract video ID and download video
-      const videoId = ytdl.getURLVideoID(text);
-      const videoStream = ytdl(videoId, { quality: 'highestaudio' });
-
-      // TODO: Implement the logic to send the video to the user
-      // This could involve saving the stream to a file and then using bot.sendVideo()
-
-    } catch (error) {
-      await bot.sendMessage(chatId, 'Sorry, there was an error downloading the video.');
-    }
+    // Download the video from YouTube
+    ytdl(videoUrl)
+      .pipe(fs.createWriteStream(videoPath))
+      .on('finish', () => {
+        // Send the video to the user
+        bot.sendVideo(chatId, videoPath)
+          .then(() => {
+            // Delete the video file after sending
+            fs.unlinkSync(videoPath);
+          });
+      });
   }
 });
 
-console.log('Bot server started in the polling mode...');
+console.log('Bot is running...');
